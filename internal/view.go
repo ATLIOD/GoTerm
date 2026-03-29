@@ -1,7 +1,9 @@
+// Package internal holds all the special bits
 package internal
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -31,13 +33,28 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Cursor++
 			}
 
-		case "enter", " ":
-			// _, ok := m.Selected[m.Cursor]
-			// if ok {
-			// 	delete(m.Selected, m.Cursor)
-			// } else {
-			// 	m.Selected[m.Cursor] = struct{}{}
-			// }
+		case "enter", "l", "o":
+			return m.enterSelected(), nil
+
+		case "backspace", "left", "h":
+			return m.TraverseBack(), nil
+
+		case "home", "g":
+			m.Cursor = 0
+
+		case "end", "G":
+			if len(m.Entries) > 0 {
+				m.Cursor = len(m.Entries) - 1
+			}
+
+		case "r":
+			return m.Reload(), nil
+
+		case ".":
+			m.ShowHidden = !m.ShowHidden
+			m.Cursor = 0
+			return m.Reload(), nil
+
 		}
 	}
 
@@ -50,16 +67,16 @@ func (m AppState) View() string {
 	if maxPath < 8 {
 		maxPath = 8
 	}
-	pathLine = pathLine
+	pathLine = Truncate(pathLine, maxPath)
 
 	var b strings.Builder
-	b.WriteString(" GoTerm — file manager ")
+	b.WriteString(TitleStyle.Render(" GoTerm — file manager "))
 	b.WriteString("\n\n")
 	b.WriteString(lipgloss.NewStyle().Faint(true).Render(pathLine))
 	b.WriteString("\n\n")
 
 	if m.Err != "" {
-		b.WriteString(m.Err)
+		b.WriteString(ErrStyle.Render(m.Err))
 		b.WriteString("\n\n")
 	}
 
@@ -84,7 +101,7 @@ func (m AppState) View() string {
 	}
 
 	if len(m.Entries) == 0 {
-		b.WriteString("(empty directory)")
+		b.WriteString(HelpStyle.Render("(empty directory)"))
 		b.WriteString("\n")
 	} else {
 		end := start + listHeight
@@ -98,20 +115,33 @@ func (m AppState) View() string {
 				cursor = "›"
 			}
 			suffix := ""
-			if e.isDir {
+			if e.IsDir {
 				suffix = "/"
 			}
-			name := e.name + suffix
-			name = name
+			name := e.Name + suffix
+			name = Truncate(name, colW-4)
 
 			line := fmt.Sprintf("%s %s", cursor, name)
-			b.WriteString(line)
+			var styled string
+			if m.Cursor == i {
+				styled = SelStyle.Render(line)
+			} else {
+				if e.IsDir {
+					styled = DirStyle.Render(line)
+				} else {
+					styled = FileStyle.Render(line)
+				}
+			}
+			b.WriteString(styled)
 			b.WriteString("\n")
 		}
 	}
 
 	b.WriteString("\n")
-	b.WriteString("j/k move · Enter/l dir or open · h/← parent · r refresh · . hidden · q quit")
+	b.WriteString(HelpStyle.Render(
+		Truncate("j/k move · Enter/l dir or open · h/← parent · r refresh · . hidden · q quit", m.Width-1),
+	))
+	b.WriteString("\n")
 
 	return b.String()
 }
@@ -128,6 +158,23 @@ func (m AppState) Reload() AppState {
 		m.Cursor = 0
 	} else if m.Cursor >= len(m.Entries) {
 		m.Cursor = len(m.Entries) - 1
+	}
+	return m
+}
+
+func (m AppState) enterSelected() AppState {
+	if len(m.Entries) == 0 {
+		return m
+	}
+	e := m.Entries[m.Cursor]
+	next := filepath.Join(m.Cwd, e.Name)
+	if e.IsDir {
+		m.Cwd = next
+		m.Cursor = 0
+		return m.Reload()
+	}
+	if err := openWithSystem(next); err != nil {
+		m.Err = err.Error()
 	}
 	return m
 }

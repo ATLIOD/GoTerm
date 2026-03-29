@@ -1,8 +1,8 @@
 package internal
 
 type entry struct {
-	name  string
-	isDir bool
+	Name  string
+	IsDir bool
 }
 
 type AppState struct {

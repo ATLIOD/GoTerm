@@ -2,6 +2,7 @@ package internal
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -29,14 +30,30 @@ func loadEntries(dir string, showHidden bool) ([]entry, error) {
 		if err != nil {
 			continue
 		}
-		out = append(out, entry{name: name, isDir: info.IsDir()})
+		out = append(out, entry{Name: name, IsDir: info.IsDir()})
 	}
 
 	sort.Slice(out, func(i, j int) bool {
-		if out[i].isDir != out[j].isDir {
-			return out[i].isDir
+		if out[i].IsDir != out[j].IsDir {
+			return out[i].IsDir
 		}
-		return strings.ToLower(out[i].name) < strings.ToLower(out[j].name)
+		return strings.ToLower(out[i].Name) < strings.ToLower(out[j].Name)
 	})
 	return out, nil
+}
+
+func openWithSystem(path string) error {
+	var cmd *exec.Cmd
+	cmd = exec.Command("xdg-open", path)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Start()
+}
+
+func Truncate(s string, max int) string {
+	if max <= 3 || len(s) <= max {
+		return s
+	}
+	return s[:max-3] + "..."
 }
