@@ -23,13 +23,15 @@ func initialModel() internal.AppState {
 		Height:     24,
 		ShowHidden: false,
 	}
+
+	m = m.Reload()
 	return m
 }
 
 func main() {
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
+		fmt.Printf("An error has occured: %v", err)
 		os.Exit(1)
 	}
 }
