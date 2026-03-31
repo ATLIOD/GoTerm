@@ -3,7 +3,6 @@ package internal
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -164,23 +163,6 @@ func (m AppState) Reload() AppState {
 		m.Cursor = 0
 	} else if m.Cursor >= len(m.Entries) {
 		m.Cursor = len(m.Entries) - 1
-	}
-	return m
-}
-
-func (m AppState) enterSelected() AppState {
-	if len(m.Entries) == 0 {
-		return m
-	}
-	e := m.Entries[m.Cursor]
-	next := filepath.Join(m.Cwd, e.Name)
-	if e.IsDir {
-		m.Cwd = next
-		m.Cursor = 0
-		return m.Reload()
-	}
-	if err := openWithSystem(next); err != nil {
-		m.Err = err.Error()
 	}
 	return m
 }

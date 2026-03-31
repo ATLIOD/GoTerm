@@ -11,3 +11,20 @@ func (m AppState) TraverseBack() AppState {
 	m.Cursor = 0
 	return m.Reload()
 }
+
+func (m AppState) enterSelected() AppState {
+	if len(m.Entries) == 0 {
+		return m
+	}
+	e := m.Entries[m.Cursor]
+	next := filepath.Join(m.Cwd, e.Name)
+	if e.IsDir {
+		m.Cwd = next
+		m.Cursor = 0
+		return m.Reload()
+	}
+	if err := openWithSystem(next); err != nil {
+		m.Err = err.Error()
+	}
+	return m
+}
