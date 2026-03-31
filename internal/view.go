@@ -16,6 +16,25 @@ func (m AppState) Init() tea.Cmd {
 func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if m.PromptActive {
+			switch msg.String() {
+
+			case "enter":
+				filename := m.TextInput.Value()
+				m.PromptActive = false
+				m.TextInput.Reset()
+				m.newFile(filename)
+				return m.Reload(), nil
+
+			case "esc":
+				m.PromptActive = false
+				m.TextInput.Reset()
+				return m, nil
+			}
+			var cmd tea.Cmd
+			m.TextInput, cmd = m.TextInput.Update(msg)
+			return m, cmd
+		}
 
 		switch msg.String() {
 
@@ -55,10 +74,12 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.Reload(), nil
 
 		case "ctrl+n":
-			return m.newFile(), nil
+			m.PromptActive = true
+			m.TextInput.Focus()
+			return m, nil
 
 		case "ctrl+shift+n":
-			return m.newFolder(), nil
+			// return m.newFolder(), nil
 
 		}
 	}
@@ -67,6 +88,10 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AppState) View() string {
+	if m.PromptActive {
+		return fmt.Sprintf("Create new file:\n%s", m.TextInput.View())
+	}
+
 	pathLine := m.Cwd
 	maxPath := m.Width - 4
 	if maxPath < 8 {
