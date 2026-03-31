@@ -55,6 +55,12 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Cursor = 0
 			return m.Reload(), nil
 
+		case "ctrl+n":
+			return m.newFile(), nil
+
+		case "ctrl+shift+n":
+			return m.newFolder(), nil
+
 		}
 	}
 
