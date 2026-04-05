@@ -23,3 +23,20 @@ func (m AppState) newFile(fileName string) AppState {
 
 	return m
 }
+
+func (m AppState) newDirectory(directoryName string) AppState {
+	filepath := filepath.Join(m.Cwd, directoryName)
+
+	if _, err := os.Stat(filepath); err == nil {
+		m.Err = "Directory already exists"
+		return m
+	}
+
+	err := os.MkdirAll(filepath, 0777)
+	if err != nil {
+		m.Err = fmt.Sprintf("Error creating directory: %v", err)
+		return m
+	}
+
+	return m
+}

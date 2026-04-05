@@ -19,4 +19,13 @@ type AppState struct {
 	ShowHidden   bool
 	PromptActive bool
 	TextInput    textinput.Model
+	Action       Action
 }
+
+type Action int
+
+const (
+	None = iota
+	NewFile
+	NewDirectory
+)
