@@ -14,6 +14,11 @@ func (m AppState) newFile(fileName string) AppState {
 		return m
 	}
 
+	if err := ValidateFileName(fileName); err != nil {
+		m.Err = fmt.Sprintf("Invalid file name: %v", err)
+		return m
+	}
+
 	file, err := os.Create(filepath)
 	if err != nil {
 		m.Err = fmt.Sprintf("Error creating file: %v", err)
@@ -29,6 +34,11 @@ func (m AppState) newDirectory(directoryName string) AppState {
 
 	if _, err := os.Stat(filepath); err == nil {
 		m.Err = "Directory already exists"
+		return m
+	}
+
+	if err := ValidateDirectoryPath(directoryName); err != nil {
+		m.Err = fmt.Sprintf("Invalid directory name: %v", err)
 		return m
 	}
 
