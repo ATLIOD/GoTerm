@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -17,11 +18,18 @@ func initialModel() internal.AppState {
 	if err != nil {
 		cwd = "."
 	}
+
+	ti := textinput.New()
+	ti.Placeholder = "Enter filename..."
+	ti.CharLimit = 256
+
 	m := internal.AppState{
-		Cwd:        cwd,
-		Width:      80,
-		Height:     24,
-		ShowHidden: false,
+		Cwd:          cwd,
+		Width:        80,
+		Height:       24,
+		ShowHidden:   false,
+		PromptActive: false,
+		TextInput:    ti,
 	}
 
 	m = m.Reload()

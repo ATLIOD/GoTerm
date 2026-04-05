@@ -3,7 +3,6 @@ package internal
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,6 +16,25 @@ func (m AppState) Init() tea.Cmd {
 func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if m.PromptActive {
+			switch msg.String() {
+
+			case "enter":
+				input := m.TextInput.Value()
+				m.PromptActive = false
+				m.TextInput.Reset()
+				m.HandleAction(input)
+				return m.Reload(), nil
+
+			case "esc":
+				m.PromptActive = false
+				m.TextInput.Reset()
+				return m, nil
+			}
+			var cmd tea.Cmd
+			m.TextInput, cmd = m.TextInput.Update(msg)
+			return m, cmd
+		}
 
 		switch msg.String() {
 
@@ -55,6 +73,17 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Cursor = 0
 			return m.Reload(), nil
 
+		case "ctrl+n":
+			m.Action = NewFile
+			m.PromptActive = true
+			m.TextInput.Focus()
+			return m, nil
+
+		case "alt+n":
+			m.Action = NewDirectory
+			m.PromptActive = true
+			m.TextInput.Focus()
+			return m, nil
 		}
 	}
 
@@ -62,6 +91,10 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AppState) View() string {
+	if m.PromptActive {
+		return fmt.Sprintf(m.GetPrompt()+"\n%s", m.TextInput.View())
+	}
+
 	pathLine := m.Cwd
 	maxPath := m.Width - 4
 	if maxPath < 8 {
@@ -158,23 +191,6 @@ func (m AppState) Reload() AppState {
 		m.Cursor = 0
 	} else if m.Cursor >= len(m.Entries) {
 		m.Cursor = len(m.Entries) - 1
-	}
-	return m
-}
-
-func (m AppState) enterSelected() AppState {
-	if len(m.Entries) == 0 {
-		return m
-	}
-	e := m.Entries[m.Cursor]
-	next := filepath.Join(m.Cwd, e.Name)
-	if e.IsDir {
-		m.Cwd = next
-		m.Cursor = 0
-		return m.Reload()
-	}
-	if err := openWithSystem(next); err != nil {
-		m.Err = err.Error()
 	}
 	return m
 }

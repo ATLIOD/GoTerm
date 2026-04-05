@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -64,4 +65,38 @@ func Truncate(s string, max int) string {
 		return s
 	}
 	return s[:max-3] + "..."
+}
+
+func ValidateFileName(name string) error {
+	if name == "" {
+		return fmt.Errorf("file name cannot be empty")
+	}
+	if name == "." || name == ".." {
+		return fmt.Errorf("file name cannot be '.' or '..'")
+	}
+	if strings.ContainsAny(name, "/\x00") {
+		return fmt.Errorf("file name cannot contain '/' or null bytes")
+	}
+	if len(name) > 255 {
+		return fmt.Errorf("file name cannot exceed 255 bytes")
+	}
+	return nil
+}
+
+func ValidateDirectoryPath(path string) error {
+	if path == "" {
+		return fmt.Errorf("directory path cannot be empty")
+	}
+	if strings.ContainsRune(path, '\x00') {
+		return fmt.Errorf("directory path cannot contain null bytes")
+	}
+	for _, component := range strings.Split(path, "/") {
+		if component == "" {
+			continue
+		}
+		if len(component) > 255 {
+			return fmt.Errorf("path component %q exceeds 255 bytes", component)
+		}
+	}
+	return nil
 }
