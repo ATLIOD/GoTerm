@@ -45,12 +45,19 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.Cursor > 0 {
 				m.Cursor--
 				m.Selection = m.Entries[m.Cursor]
+				if m.Selection.IsDir {
+					return m.Reload(), nil
+				}
 			}
 
 		case "down", "j":
 			if m.Cursor < len(m.Entries)-1 {
 				m.Cursor++
 				m.Selection = m.Entries[m.Cursor]
+				if m.Selection.IsDir {
+					return m.Reload(), nil
+				}
+
 			}
 
 		case "enter", "l", "o":
