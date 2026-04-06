@@ -10,16 +10,20 @@ type entry struct {
 }
 
 type AppState struct {
-	Cwd          string
-	Entries      []entry
-	Cursor       int
-	Err          string
-	Width        int
-	Height       int
-	ShowHidden   bool
-	PromptActive bool
-	TextInput    textinput.Model
-	Action       Action
+	Cwd           string
+	Entries       []entry
+	Cursor        int
+	Err           string
+	Width         int
+	Height        int
+	ShowHidden    bool
+	PromptActive  bool
+	TextInput     textinput.Model
+	Action        Action
+	ParentDir     string
+	ParentEntries []entry
+	ChildDir      string
+	ChildEntries  []entry
 }
 
 type Action int
