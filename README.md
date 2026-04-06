@@ -1,2 +1,2 @@
 # GoTerm
-terminal editor written in go
+terminal file manager written in go
