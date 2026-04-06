@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -111,7 +112,7 @@ func (m AppState) leftPanel() string {
 
 			line := fmt.Sprintf("%s ", name)
 			var styled string
-			if m.Cwd == m.ParentEntries[i].Name {
+			if filepath.Base(m.Cwd) == e.Name {
 				styled = SelStyle.Render(line)
 			} else {
 				if e.IsDir {
