@@ -8,6 +8,7 @@ import (
 	"GoTerm/internal"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -18,6 +19,7 @@ func initialModel() internal.AppState {
 	if err != nil {
 		cwd = "."
 	}
+	parentDir := filepath.Dir(cwd)
 
 	ti := textinput.New()
 	ti.Placeholder = "Enter filename..."
@@ -30,6 +32,7 @@ func initialModel() internal.AppState {
 		ShowHidden:   false,
 		PromptActive: false,
 		TextInput:    ti,
+		ParentDir:    parentDir,
 	}
 
 	m = m.Reload()

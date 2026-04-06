@@ -17,23 +17,7 @@ var (
 )
 
 func (m AppState) mainPanel() string {
-	pathLine := m.Cwd
-	maxPath := m.Width - 4
-	if maxPath < 8 {
-		maxPath = 8
-	}
-	pathLine = Truncate(pathLine, maxPath)
-
 	var b strings.Builder
-	b.WriteString(TitleStyle.Render(" GoTerm — file manager "))
-	b.WriteString("\n\n")
-	b.WriteString(lipgloss.NewStyle().Faint(true).Render(pathLine))
-	b.WriteString("\n\n")
-
-	if m.Err != "" {
-		b.WriteString(ErrStyle.Render(m.Err))
-		b.WriteString("\n\n")
-	}
 
 	listHeight := m.Height - 8
 	if listHeight < 3 {
@@ -95,22 +79,7 @@ func (m AppState) mainPanel() string {
 }
 
 func (m AppState) leftPanel() string {
-	pathLine := m.ParentDir
-	maxPath := m.Width - 4
-	if maxPath < 8 {
-		maxPath = 8
-	}
-	pathLine = Truncate(pathLine, maxPath)
-
 	var b strings.Builder
-	b.WriteString("\n\n\n")
-	b.WriteString(lipgloss.NewStyle().Faint(true).Render(pathLine))
-	b.WriteString("\n\n")
-
-	if m.Err != "" {
-		b.WriteString(ErrStyle.Render(m.Err))
-		b.WriteString("\n\n")
-	}
 
 	listHeight := m.Height - 8
 	if listHeight < 3 {
@@ -123,16 +92,16 @@ func (m AppState) leftPanel() string {
 
 	start := 0
 
-	if len(m.Entries) == 0 {
+	if len(m.ParentEntries) == 0 {
 		b.WriteString(HelpStyle.Render("(empty directory)"))
 		b.WriteString("\n")
 	} else {
 		end := start + listHeight
-		if end > len(m.Entries) {
-			end = len(m.Entries)
+		if end > len(m.ParentEntries) {
+			end = len(m.ParentEntries)
 		}
 		for i := start; i < end; i++ {
-			e := m.Entries[i]
+			e := m.ParentEntries[i]
 			suffix := ""
 			if e.IsDir {
 				suffix = "/"
@@ -140,12 +109,16 @@ func (m AppState) leftPanel() string {
 			name := e.Name + suffix
 			name = Truncate(name, colW-4)
 
-			line := fmt.Sprintf("%s %s", name)
+			line := fmt.Sprintf("%s ", name)
 			var styled string
-			if e.IsDir {
-				styled = DirStyle.Render(line)
+			if m.Cwd == m.ParentEntries[i].Name {
+				styled = SelStyle.Render(line)
 			} else {
-				styled = FileStyle.Render(line)
+				if e.IsDir {
+					styled = DirStyle.Render(line)
+				} else {
+					styled = FileStyle.Render(line)
+				}
 			}
 			b.WriteString(styled)
 			b.WriteString("\n")

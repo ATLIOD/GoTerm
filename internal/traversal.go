@@ -8,6 +8,7 @@ func (m AppState) TraverseBack() AppState {
 		return m
 	}
 	m.Cwd = parent
+	m.ParentDir = filepath.Dir(m.Cwd)
 	m.Cursor = 0
 	return m.Reload()
 }
@@ -19,6 +20,7 @@ func (m AppState) enterSelected() AppState {
 	e := m.Entries[m.Cursor]
 	next := filepath.Join(m.Cwd, e.Name)
 	if e.IsDir {
+		m.ParentDir = m.Cwd
 		m.Cwd = next
 		m.Cursor = 0
 		return m.Reload()

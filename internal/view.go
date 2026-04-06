@@ -95,8 +95,25 @@ func (m AppState) View() string {
 		return fmt.Sprintf(m.GetPrompt()+"\n%s", m.TextInput.View())
 	}
 
+	pathLine := m.Cwd
+	maxPath := m.Width - 4
+	if maxPath < 8 {
+		maxPath = 8
+	}
+	pathLine = Truncate(pathLine, maxPath)
+
 	var b strings.Builder
-	c := lipgloss.JoinHorizontal(0, m.leftPanel(), m.mainPanel())
+	b.WriteString(TitleStyle.Render(" GoTerm — file manager "))
+	b.WriteString("\n\n")
+	b.WriteString(lipgloss.NewStyle().Faint(true).Render(pathLine))
+	b.WriteString("\n\n")
+
+	if m.Err != "" {
+		b.WriteString(ErrStyle.Render(m.Err))
+		b.WriteString("\n\n")
+	}
+
+	c := lipgloss.JoinHorizontal(0.1, m.leftPanel(), m.mainPanel())
 	b.WriteString(c)
 
 	b.WriteString("\n")
