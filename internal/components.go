@@ -128,45 +128,47 @@ func (m AppState) rightPanel() string {
 	if colW < 10 {
 		colW = 10
 	}
-	if m.Selection.IsDir {
-		start := 0
+	if m.Selection != (entry{}) {
+		if m.Selection.IsDir {
+			start := 0
 
-		if len(m.SelectionEntries) == 0 {
-			b.WriteString(HelpStyle.Render("(empty directory)"))
-			b.WriteString("\n")
-		} else {
-			end := start + listHeight
-			if end > len(m.SelectionEntries) {
-				end = len(m.SelectionEntries)
+			if len(m.SelectionEntries) == 0 {
+				b.WriteString(HelpStyle.Render("(empty directory)"))
+				b.WriteString("\n")
+			} else {
+				end := start + listHeight
+				if end > len(m.SelectionEntries) {
+					end = len(m.SelectionEntries)
+				}
+				for i := start; i < end; i++ {
+					e := m.SelectionEntries[i]
+					suffix := ""
+					if e.IsDir {
+						suffix = "/"
+					}
+					name := e.Name + suffix
+					name = Truncate(name, colW-4)
+
+					line := fmt.Sprintf("%s ", name)
+					var styled string
+					if e.IsDir {
+						styled = DirStyle.Render(line)
+					} else {
+						styled = FileStyle.Render(line)
+					}
+					b.WriteString(styled)
+					b.WriteString("\n")
+				}
 			}
-			for i := start; i < end; i++ {
-				e := m.SelectionEntries[i]
-				suffix := ""
-				if e.IsDir {
-					suffix = "/"
-				}
-				name := e.Name + suffix
-				name = Truncate(name, colW-4)
-
-				line := fmt.Sprintf("%s ", name)
-				var styled string
-				if e.IsDir {
-					styled = DirStyle.Render(line)
-				} else {
-					styled = FileStyle.Render(line)
-				}
-				b.WriteString(styled)
+		} else {
+			contents, err := readFileContents(filepath.Join(m.Cwd, m.Selection.Name), colW)
+			if err != nil {
+				b.WriteString(ErrStyle.Render("Error reading file: " + err.Error()))
 				b.WriteString("\n")
 			}
-		}
-	} else {
-		contents, err := readFileContents(filepath.Join(m.Cwd, m.Selection.Name), colW)
-		if err != nil {
-			b.WriteString(ErrStyle.Render("Error reading file: " + err.Error()))
+			b.WriteString(contents)
 			b.WriteString("\n")
 		}
-		b.WriteString(contents)
-		b.WriteString("\n")
 	}
 	return b.String()
 }

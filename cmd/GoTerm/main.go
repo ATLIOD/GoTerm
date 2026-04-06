@@ -40,7 +40,7 @@ func initialModel() internal.AppState {
 }
 
 func main() {
-	p := tea.NewProgram(initialModel())
+	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("An error has occured: %v", err)
 		os.Exit(1)
