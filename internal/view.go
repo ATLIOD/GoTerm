@@ -44,11 +44,13 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up", "k":
 			if m.Cursor > 0 {
 				m.Cursor--
+				m.Selection = m.Entries[m.Cursor]
 			}
 
 		case "down", "j":
 			if m.Cursor < len(m.Entries)-1 {
 				m.Cursor++
+				m.Selection = m.Entries[m.Cursor]
 			}
 
 		case "enter", "l", "o":
@@ -95,7 +97,7 @@ func (m AppState) View() string {
 		return fmt.Sprintf(m.GetPrompt()+"\n%s", m.TextInput.View())
 	}
 
-	pathLine := m.Cwd
+	pathLine := m.Selection.Path
 	maxPath := m.Width - 4
 	if maxPath < 8 {
 		maxPath = 8
@@ -113,7 +115,7 @@ func (m AppState) View() string {
 		b.WriteString("\n\n")
 	}
 
-	c := lipgloss.JoinHorizontal(0.1, m.leftPanel(), m.mainPanel())
+	c := lipgloss.JoinHorizontal(0.1, m.leftPanel(), m.mainPanel(), m.rightPanel())
 	b.WriteString(c)
 
 	b.WriteString("\n")
@@ -126,6 +128,7 @@ func (m AppState) View() string {
 }
 
 func (m AppState) Reload() AppState {
+	// Update current directory entries for main panel
 	entries, err := loadEntries(m.Cwd, m.ShowHidden)
 	if err != nil {
 		m.Err = err.Error()
@@ -138,12 +141,25 @@ func (m AppState) Reload() AppState {
 	} else if m.Cursor >= len(m.Entries) {
 		m.Cursor = len(m.Entries) - 1
 	}
+
+	// Update parent entries for left panel
 	entries, err = loadEntries(m.ParentDir, m.ShowHidden)
 	if err != nil {
 		m.Err = err.Error()
 		return m
 	}
 	m.ParentEntries = entries
+
+	// Update selection and its entries for right panel
+	m.Selection = m.Entries[m.Cursor]
+	if m.Selection.IsDir {
+		entries, err = loadEntries(m.Selection.Path, m.ShowHidden)
+		if err != nil {
+			m.Err = err.Error()
+			return m
+		}
+		m.SelectionEntries = entries
+	}
 	m.Err = ""
 	return m
 }

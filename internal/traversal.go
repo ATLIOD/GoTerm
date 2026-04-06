@@ -10,6 +10,7 @@ func (m AppState) TraverseBack() AppState {
 	m.Cwd = parent
 	m.ParentDir = filepath.Dir(m.Cwd)
 	m.Cursor = 0
+	m.Selection = entry{}
 	return m.Reload()
 }
 
@@ -23,6 +24,7 @@ func (m AppState) enterSelected() AppState {
 		m.ParentDir = m.Cwd
 		m.Cwd = next
 		m.Cursor = 0
+		m.Selection = entry{}
 		return m.Reload()
 	}
 	if err := openWithSystem(next); err != nil {
