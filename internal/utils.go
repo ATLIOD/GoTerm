@@ -104,25 +104,31 @@ func ValidateDirectoryPath(path string) error {
 }
 
 func readFileContents(path string, maxWidth int, maxHeight int) (string, error) {
-	file, err := os.Open(path) // use the `path` parameter
+	file, err := os.Open(path)
 	if err != nil {
 		return "", fmt.Errorf("error opening file: %w", err)
 	}
 	defer file.Close()
 
 	reader := bufio.NewReader(file)
-
 	var builder strings.Builder
 
 	for i := 0; i < maxHeight; i++ {
 		line, err := reader.ReadString('\n')
+		line = strings.TrimRight(line, "\r\n")
 
-		if len(line) > 0 {
-			// Apply maxWidth truncation if specified
-			if maxWidth > 0 && len(line) > maxWidth {
-				line = line[:maxWidth]
+		if maxWidth > 0 {
+			runes := []rune(line)
+			if len(runes) > maxWidth {
+				line = string(runes[:maxWidth])
+			} else {
+				line = string(runes)
 			}
-			builder.WriteString(line)
+		}
+
+		builder.WriteString(line)
+		if i < maxHeight-1 {
+			builder.WriteString("\n")
 		}
 
 		if err == io.EOF {
