@@ -1,6 +1,8 @@
 package internal
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	TitleStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("81"))

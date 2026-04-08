@@ -1,7 +1,9 @@
 package internal
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,7 +34,7 @@ func loadEntries(dir string, showHidden bool) ([]entry, error) {
 		if err != nil {
 			continue
 		}
-		out = append(out, entry{Name: name, IsDir: info.IsDir()})
+		out = append(out, entry{Name: name, IsDir: info.IsDir(), Path: full})
 	}
 
 	sort.Slice(out, func(i, j int) bool {
@@ -99,4 +101,37 @@ func ValidateDirectoryPath(path string) error {
 		}
 	}
 	return nil
+}
+
+func readFileContents(path string, maxWidth int, maxHeight int) (string, error) {
+	file, err := os.Open(path) // use the `path` parameter
+	if err != nil {
+		return "", fmt.Errorf("error opening file: %w", err)
+	}
+	defer file.Close()
+
+	reader := bufio.NewReader(file)
+
+	var builder strings.Builder
+
+	for i := 0; i < maxHeight; i++ {
+		line, err := reader.ReadString('\n')
+
+		if len(line) > 0 {
+			// Apply maxWidth truncation if specified
+			if maxWidth > 0 && len(line) > maxWidth {
+				line = line[:maxWidth]
+			}
+			builder.WriteString(line)
+		}
+
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return "", fmt.Errorf("error reading file: %w", err)
+		}
+	}
+
+	return builder.String(), nil
 }
