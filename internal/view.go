@@ -18,7 +18,7 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.Width = msg.Width
-		m.Height = msg.Height
+		m.Height = msg.Height - 2
 	case tea.KeyMsg:
 		if m.PromptActive {
 			switch msg.String() {
@@ -116,24 +116,22 @@ func (m AppState) View() string {
 	pathLine = Truncate(pathLine, maxPath)
 
 	var b strings.Builder
-	b.WriteString(TitleStyle.Render(" GoTerm — file manager "))
-	b.WriteString("\n\n")
 	b.WriteString(lipgloss.NewStyle().Faint(true).Render(pathLine))
-	b.WriteString("\n\n")
+	b.WriteString("\n")
 
 	if m.Err != "" {
 		b.WriteString(ErrStyle.Render(m.Err))
-		b.WriteString("\n\n")
+		b.WriteString("\n")
 	}
 
-	c := lipgloss.JoinHorizontal(lipgloss.Top, m.leftPanel(), m.mainPanel(), m.rightPanel())
+	mainContainerStyle := lipgloss.NewStyle().Height(m.Height)
+	c := mainContainerStyle.Render(lipgloss.JoinHorizontal(lipgloss.Top, m.leftPanel(), m.mainPanel(), m.rightPanel()))
 	b.WriteString(c)
 
 	b.WriteString("\n")
 	b.WriteString(HelpStyle.Render(
 		Truncate("j/k move · Enter/l dir or open · h/← parent · r refresh · . hidden · q quit", m.Width-1),
 	))
-	b.WriteString("\n")
 
 	return b.String()
 }

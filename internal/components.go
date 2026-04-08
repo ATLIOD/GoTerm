@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (m AppState) mainPanel() string {
@@ -13,7 +15,7 @@ func (m AppState) mainPanel() string {
 	if listHeight < 3 {
 		listHeight = 3
 	}
-	colW := m.Width / 3
+	colW := m.Width / 4
 	if colW < 10 {
 		colW = 10
 	}
@@ -65,7 +67,12 @@ func (m AppState) mainPanel() string {
 			b.WriteString("\n")
 		}
 	}
-	return b.String()
+	return lipgloss.NewStyle().
+		Width(colW).
+		Border(lipgloss.NormalBorder(), false, false, false, true).
+		BorderForeground(lipgloss.Color("240")).
+		PaddingLeft(1).
+		Render(b.String())
 }
 
 func (m AppState) leftPanel() string {
@@ -75,7 +82,7 @@ func (m AppState) leftPanel() string {
 	if listHeight < 3 {
 		listHeight = 3
 	}
-	colW := m.Width / 3
+	colW := m.Width / 4
 	if colW < 10 {
 		colW = 10
 	}
@@ -114,7 +121,10 @@ func (m AppState) leftPanel() string {
 			b.WriteString("\n")
 		}
 	}
-	return b.String()
+	return lipgloss.NewStyle().
+		Width(colW).
+		PaddingLeft(1).
+		Render(b.String())
 }
 
 func (m AppState) rightPanel() string {
@@ -124,7 +134,7 @@ func (m AppState) rightPanel() string {
 	if listHeight < 3 {
 		listHeight = 3
 	}
-	colW := m.Width / 3
+	colW := m.Width / 2
 	if colW < 10 {
 		colW = 10
 	}
@@ -161,14 +171,18 @@ func (m AppState) rightPanel() string {
 				}
 			}
 		} else {
-			contents, err := readFileContents(filepath.Join(m.Cwd, m.Selection.Name), colW, listHeight)
+			contents, err := readFileContents(filepath.Join(m.Cwd, m.Selection.Name), colW-2, listHeight-1)
 			if err != nil {
 				b.WriteString(ErrStyle.Render("Error reading file: " + err.Error()))
 				b.WriteString("\n")
 			}
 			b.WriteString(contents)
-			b.WriteString("\n")
 		}
 	}
-	return b.String()
+	return lipgloss.NewStyle().
+		Width(colW).
+		Border(lipgloss.NormalBorder(), false, false, false, true).
+		BorderForeground(lipgloss.Color("240")).
+		PaddingLeft(1).
+		Render(b.String())
 }
