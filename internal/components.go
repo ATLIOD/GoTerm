@@ -9,11 +9,11 @@ import (
 func (m AppState) mainPanel() string {
 	var b strings.Builder
 
-	listHeight := m.Height - 8
+	listHeight := m.Height
 	if listHeight < 3 {
 		listHeight = 3
 	}
-	colW := m.Width - 2
+	colW := m.Width / 3
 	if colW < 10 {
 		colW = 10
 	}
@@ -71,11 +71,11 @@ func (m AppState) mainPanel() string {
 func (m AppState) leftPanel() string {
 	var b strings.Builder
 
-	listHeight := m.Height - 8
+	listHeight := m.Height
 	if listHeight < 3 {
 		listHeight = 3
 	}
-	colW := m.Width - 2
+	colW := m.Width / 3
 	if colW < 10 {
 		colW = 10
 	}
@@ -120,11 +120,11 @@ func (m AppState) leftPanel() string {
 func (m AppState) rightPanel() string {
 	var b strings.Builder
 
-	listHeight := m.Height - 8
+	listHeight := m.Height
 	if listHeight < 3 {
 		listHeight = 3
 	}
-	colW := m.Width - 2
+	colW := m.Width / 3
 	if colW < 10 {
 		colW = 10
 	}
@@ -161,7 +161,7 @@ func (m AppState) rightPanel() string {
 				}
 			}
 		} else {
-			contents, err := readFileContents(filepath.Join(m.Cwd, m.Selection.Name), colW)
+			contents, err := readFileContents(filepath.Join(m.Cwd, m.Selection.Name), colW, listHeight)
 			if err != nil {
 				b.WriteString(ErrStyle.Render("Error reading file: " + err.Error()))
 				b.WriteString("\n")

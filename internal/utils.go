@@ -103,7 +103,7 @@ func ValidateDirectoryPath(path string) error {
 	return nil
 }
 
-func readFileContents(path string, maxWidth int) (string, error) {
+func readFileContents(path string, maxWidth int, maxHeight int) (string, error) {
 	file, err := os.Open(path) // use the `path` parameter
 	if err != nil {
 		return "", fmt.Errorf("error opening file: %w", err)
@@ -114,7 +114,7 @@ func readFileContents(path string, maxWidth int) (string, error) {
 
 	var builder strings.Builder
 
-	for {
+	for i := 0; i < maxHeight; i++ {
 		line, err := reader.ReadString('\n')
 
 		if len(line) > 0 {
