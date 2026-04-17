@@ -20,6 +20,16 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Width = msg.Width
 		m.Height = msg.Height - 2
 	case tea.KeyMsg:
+		if m.ConfirmActive {
+			switch msg.String() {
+			case "y":
+				return m.resolveOverwriteConfirm(true).Reload(), nil
+			case "n", "esc":
+				return m.resolveOverwriteConfirm(false).Reload(), nil
+			}
+			return m, nil
+		}
+
 		if m.PromptActive {
 			switch msg.String() {
 
@@ -40,7 +50,16 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 
-		switch msg.String() {
+		key := msg.String()
+
+		if m.AwaitingSecondY {
+			m.AwaitingSecondY = false
+			if key == "y" {
+				return m.yankSelection(), nil
+			}
+		}
+
+		switch key {
 
 		case "ctrl+c", "q":
 			return m, tea.Quit
@@ -97,6 +116,14 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.PromptActive = true
 			m.TextInput.Focus()
 			return m, nil
+
+		case "y":
+			m.AwaitingSecondY = true
+			m.Err = ""
+			return m, nil
+
+		case "p":
+			return m.startPasteIntoCurrentDir().Reload(), nil
 		}
 	}
 
@@ -104,6 +131,10 @@ func (m AppState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m AppState) View() string {
+	if m.ConfirmActive {
+		return m.ConfirmMessage
+	}
+
 	if m.PromptActive {
 		return fmt.Sprintf(m.GetPrompt()+"\n%s", m.TextInput.View())
 	}
@@ -130,7 +161,7 @@ func (m AppState) View() string {
 
 	b.WriteString("\n")
 	b.WriteString(HelpStyle.Render(
-		Truncate("j/k move · Enter/l dir or open · h/← parent · r refresh · . hidden · q quit", m.Width-1),
+		Truncate("j/k move · Enter/l dir or open · h/← parent · yy copy · p paste · r refresh · . hidden · q quit", m.Width-1),
 	))
 
 	return b.String()
