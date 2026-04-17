@@ -25,6 +25,12 @@ type AppState struct {
 	ParentEntries    []entry
 	Selection        entry
 	SelectionEntries []entry
+	Clipboard        []entry
+	AwaitingSecondY  bool
+	ConfirmActive    bool
+	ConfirmMessage   string
+	PendingSource    string
+	PendingDest      string
 }
 
 type Action int
